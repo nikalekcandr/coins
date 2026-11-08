@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """CLI: сбор -> нормализация -> БД сделок -> аналитика -> отчёты.
 
+ПОЛНЫЙ СБОРОТ ОДНОЙ КОМАНДОЙ (магазин SM + аукционы SM + Мешок активные и
+завершённые лоты + аналитика + индекс + калибровка + отчёт):
+
+    python scan.py all --storage-state cookies.json
+
+    (без cookies Мешок будет пропущен с подсказкой, остальное выполнится)
+
+Отдельные команды:
     python scan.py harvest-sm              собрать лоты staraya-moneta (магазин)
     python scan.py harvest-sm-auction      аукционы staraya-moneta (EXPERIMENTAL)
     python scan.py harvest-meshok          активные лоты meshok (нужны cookies/прокси)
@@ -14,7 +22,8 @@
     python scan.py calibrate               пары грейдеров -> калибровка ngs_discount
     python scan.py stats                   сводка по базе
     python scan.py report                  HTML + CSV/JSON отчёты
-    python scan.py all                     полный цикл (seed -> сбор -> аналитика -> отчёт)
+    python scan.py calc --buy X --sale Y   калькулятор одной сделки
+    python scan.py demo                    демо-прогон на синтетическом рынке
 """
 from __future__ import annotations
 import argparse, asyncio, csv, json, sys
@@ -476,14 +485,30 @@ def main():
 
     if args.cmd in ("harvest-sm", "all"):
         _harvest(harvest_sm, "→ Сбор staraya-moneta (магазин)", "сбор SM не выполнен")
-    if args.cmd == "harvest-sm-auction":
+    if args.cmd in ("harvest-sm-auction", "all"):
         _harvest(harvest_sm_auction, "→ Сбор staraya-moneta (аукционы, EXPERIMENTAL)",
                  "аукционы (проверьте AUCTION_URLS в sources/staraya_moneta.py)")
-    if args.cmd in ("harvest-meshok", "all"):
+    meshok_creds = bool(args.storage_state or args.proxy)
+    if args.cmd == "harvest-meshok":
         _harvest(lambda: harvest_meshok(args.pages, args.section, args.storage_state,
                                         args.proxy, args.query, args.sold),
                  "→ Сбор meshok" + (" (завершённые лоты)" if args.sold else ""),
                  "meshok (Cloudflare / нужны cookies)")
+    if args.cmd == "all":
+        if meshok_creds:
+            # активные лоты (витрина + цены конкурентов)
+            _harvest(lambda: harvest_meshok(args.pages, args.section, args.storage_state,
+                                            args.proxy, args.query, sold=False),
+                     "→ Сбор meshok (активные лоты)", "meshok активные")
+            # завершённые лоты — факты продаж в базу сделок
+            _harvest(lambda: harvest_meshok(args.pages, args.section, args.storage_state,
+                                            args.proxy, args.query, sold=True),
+                     "→ Сбор meshok (завершённые лоты → база сделок)", "meshok завершённые")
+        else:
+            print("→ Сбор meshok пропущен: нужны cookies или прокси.")
+            print("    Как включить: зайдите на meshok.net в браузере, выгрузите cookies")
+            print("    (EditThisCookie → cookies.json в папку проекта) и запустите:")
+            print("    python scan.py all --storage-state cookies.json")
     if args.cmd == "import-comps":
         if not args.file:
             sys.exit("укажите CSV: scan.py import-comps data/comps_seed.csv")
@@ -533,6 +558,17 @@ def main():
             out = DATA / "report.html"
             out.write_text(report.build(ctx), encoding="utf-8")
             print("→ HTML:", out, f"({len(ctx['watch'])} лотов с аналогами)")
+    if args.cmd == "all":
+        print("→ Ценовой индекс")
+        run_index(args.min_listings)
+        print("→ Калибровка скидки NGS")
+        run_calibrate()
+        print("→ Сводка по базе")
+        run_stats()
+        print("\nГотово. Отчёт: data/report.html · индекс: data/price_index.csv")
+        if not meshok_creds:
+            print("Напоминание: без cookies Мешка база сделок не наполняется —")
+            print("полный сбор: python scan.py all --storage-state cookies.json")
 
 
 if __name__ == "__main__":

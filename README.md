@@ -9,26 +9,46 @@
 
 ## Быстрый старт
 
-```bash
-pip install playwright beautifulsoup4 lxml     # playwright — только для живого сбора
-python -m playwright install chromium
+**Установка (один раз):**
 
-python scan.py import-comps data/comps_seed.csv   # справочные цены (демо-набор)
-python scan.py harvest-sm                         # собрать лоты staraya-moneta
+```bash
+pip install -r requirements.txt                  # playwright, beautifulsoup4, lxml
+python -m playwright install chromium            # браузер для сбора
+python scan.py demo                              # самопроверка: всё работает?
+```
+
+**ПОЛНЫЙ СБОРОТ ОДНОЙ КОМАНДОЙ** (магазин SM → аукционы SM → Мешок активные
+и завершённые лоты → аналитика → индекс → калибровка NGS → отчёт):
+
+```bash
+python scan.py all --storage-state cookies.json
+```
+
+Без `cookies.json` Мешок будет пропущен (Cloudflare), остальное выполнится.
+Cookies: зайдите на meshok.net в своём браузере → расширение EditThisCookie →
+экспорт → сохраните как `cookies.json` в папку проекта.
+
+Ручная догрузка фактов продаж из архивов аукционов (Конрос, Волмар, Редкие
+Монеты): сохраните страницу архива → `python scan.py import-sold archive.html --source conros`.
+
+**Отдельные команды:**
+
+```bash
+python scan.py harvest-sm                         # только лоты staraya-moneta
 python scan.py harvest-meshok --sold --storage-state cookies.json  # завершённые лоты Мешка -> сделки
-python scan.py import-sold archive.html --source conros            # архив аукциона -> сделки
+python scan.py import-comps data/comps_seed.csv   # справочные цены (демо-набор)
 python scan.py renormalize                        # пересчитать признаки текущим парсером
 python scan.py index                              # ценовой индекс по типам (+ CSV)
 python scan.py calibrate                          # скидка NGS по реальным парам грейдеров
 python scan.py analyze                            # все стратегии арбитража
 python scan.py report                             # отчёт в data/report.html
 python scan.py calc --buy 12000 --sale 43400      # калькулятор одной сделки
-python scan.py demo                               # демо-прогон всех стратегий на синтетике
 ```
 
-Полный цикл одной командой: `python scan.py all`
 Без интернета/браузера работают: `import-comps`, `import-sold`, `import-raw`,
-`renormalize`, `index`, `calibrate`, `analyze`, `report`, `stats`, `mark`.
+`renormalize`, `index`, `calibrate`, `analyze`, `report`, `stats`, `mark`,
+`calc`, `demo`. Ежедневная рутина: просто `python scan.py all …` — история цен
+и vanish-прокси сделок копятся сами.
 
 ## Как это работает
 
