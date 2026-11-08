@@ -29,15 +29,40 @@ from __future__ import annotations
 import argparse, asyncio, csv, json, sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from coinarb import analyze, arbitrage, comps_io, fees, index as index_mod, report, store
-from coinarb.normalize import parse
-from coinarb.sources import meshok as meshok_src
-from coinarb.sources import sold as sold_src
-from coinarb.sources import staraya_moneta as sm_src
-
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+
+
+def _die_no_deps(err: ModuleNotFoundError) -> None:
+    """Человеческое сообщение вместо traceback, если зависимости не установлены."""
+    bar = "=" * 66
+    print(bar)
+    print("НЕ УСТАНОВЛЕНЫ БИБЛИОТЕКИ — поэтому ничего не работает.")
+    print()
+    print("Выполните ОДИН РАЗ в этой же папке (Windows: SETUP.bat сделает сам):")
+    print()
+    print("    pip install -r requirements.txt")
+    print("    python -m playwright install chromium")
+    print()
+    print("Если «pip не является командой» →  python -m pip install -r requirements.txt")
+    print("Если «python не является командой» → установите Python 3.10+ с python.org")
+    print("   (галочка «Add python.exe to PATH»), либо пробуйте вместо python: py -3")
+    print(f"(технически: {err})")
+    print(bar)
+    sys.exit(1)
+
+
+try:
+    import lxml  # noqa: F401  — нужен парсерам BeautifulSoup
+    from coinarb import (analyze, arbitrage, comps_io, fees,
+                         index as index_mod, report, store)
+    from coinarb.normalize import parse
+    from coinarb.sources import meshok as meshok_src
+    from coinarb.sources import sold as sold_src
+    from coinarb.sources import staraya_moneta as sm_src
+except ModuleNotFoundError as _e:
+    _die_no_deps(_e)
+
 DATA = ROOT / "data"
 
 STRATEGY_LABELS = {
@@ -474,11 +499,26 @@ def main():
                   ":", comps_io.import_csv(con0, seed), "записей")
 
     def _harvest(coro_fn, label: str, on_fail: str):
+        """Сбор с человеческими подсказками при типовых отказах (без traceback)."""
         print(label)
         try:
             got = asyncio.run(coro_fn())
         except RuntimeError as e:
             print(f"  ! {on_fail}: {e}")
+            return None
+        except Exception as e:                      # playwright и сетевые ошибки
+            msg = str(e)
+            if "Executable doesn't exist" in msg or "playwright install" in msg:
+                print("  ! Не скачан браузер для сбора. Выполните один раз:")
+                print("        python -m playwright install chromium")
+                print("    (на Windows это делает SETUP.bat)")
+            elif "BLOCKED" in msg or "CHALLENGE" in msg:
+                print(f"  ! {on_fail}: сайт закрылся защитой (нужны cookies/прокси)")
+            elif "net::" in msg or "Timeout" in msg or "timeout" in msg:
+                print(f"  ! {on_fail}: сеть/таймаут — проверьте интернет и повторите")
+            else:
+                first = next((ln for ln in msg.splitlines() if ln.strip()), "")
+                print(f"  ! {on_fail}: {type(e).__name__}: {first[:160]}")
             return None
         print(persist(got) if got else f"  {on_fail}: 0 лотов")
         return got
