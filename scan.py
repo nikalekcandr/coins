@@ -427,9 +427,10 @@ def run_calibrate_quiet(con) -> dict:
 def main():
     ap = argparse.ArgumentParser(description="Coinarb: арбитраж монет")
     ap.add_argument("cmd", choices=["harvest-sm", "harvest-sm-auction", "harvest-meshok",
-                                    "import-comps", "import-sold", "import-raw",
-                                    "renormalize", "analyze", "index", "calibrate",
-                                    "stats", "report", "all", "mark", "calc", "demo"])
+                                    "import-comps", "export-comps", "import-sold",
+                                    "import-raw", "renormalize", "analyze", "index",
+                                    "calibrate", "stats", "report", "all", "mark",
+                                    "calc", "demo"])
     ap.add_argument("file", nargs="?")
     ap.add_argument("--status", default="taken", help="для mark: new|taken|rejected|done")
     ap.add_argument("--buy", type=float, help="для calc: цена покупки, ₽")
@@ -487,6 +488,10 @@ def main():
         if not args.file:
             sys.exit("укажите CSV: scan.py import-comps data/comps_seed.csv")
         print("comps загружено:", comps_io.import_csv(store.connect(), args.file))
+    if args.cmd == "export-comps":
+        out = args.file or str(DATA / "comps_export.csv")
+        n = comps_io.export_comps_csv(store.connect(), out)
+        print(f"→ {n} записей (comps + deals) выгружено в {out}")
     if args.cmd == "import-sold":
         if not args.file:
             sys.exit("укажите файл: scan.py import-sold FILE [--source NAME --format FMT]")

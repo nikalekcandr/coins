@@ -38,5 +38,10 @@ def run():
     print(f"{len(CASES)-bad}/{len(CASES)} тестов прошло")
     return bad
 
+def test_reference_cases():
+    """pytest-обёртка: run() печатает детали и возвращает число провалов."""
+    assert run() == 0
+
+
 if __name__ == "__main__":
     sys.exit(1 if run() else 0)

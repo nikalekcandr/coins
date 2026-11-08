@@ -147,5 +147,10 @@ def run():
     return bad
 
 
+def test_normalize_cases():
+    """pytest-обёртка: run() печатает детали и возвращает число провалов."""
+    assert run() == 0
+
+
 if __name__ == "__main__":
     sys.exit(1 if run() else 0)
