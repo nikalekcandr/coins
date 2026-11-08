@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+cache/
+cookies.json
+*.storage-state.json
+data/raw/*.html
+.venv/
+.DS_Store
+data/demo.db
+data/report_demo.html
+data/price_index.csv
+data/index.html

@@ -1,11 +1,20 @@
-"""Единый слой доступа к сайтам: Playwright + кэш + rate-limit + ретраи."""
+"""Единый слой доступа к сайтам: Playwright + кэш + rate-limit + ретраи.
+
+Playwright импортируется лениво: аналитика, импорт архивов и отчёты работают
+без него — он нужен только для живого сбора (harvest-*).
+"""
 from __future__ import annotations
 import asyncio, hashlib, json, os, random, time
 from pathlib import Path
-from playwright.async_api import async_playwright, Browser, BrowserContext
+
+try:  # ленивый импорт: без playwright остальной пайплайн обязан работать
+    from playwright.async_api import async_playwright, Browser, BrowserContext
+except ImportError:  # pragma: no cover
+    async_playwright = None
+    Browser = BrowserContext = object
 
 CACHE = Path(__file__).resolve().parent.parent / "cache"
-CACHE.mkdir(exist_ok=True)
+CACHE.mkdir(parents=True, exist_ok=True)
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 
@@ -28,6 +37,10 @@ class Fetcher:
         self._pw = None
 
     async def __aenter__(self):
+        if async_playwright is None:
+            raise RuntimeError(
+                "playwright не установлен — живой сбор недоступен. "
+                "Установка: pip install playwright && python -m playwright install chromium")
         self._pw = await async_playwright().start()
         kw = {"headless": self.headless,
               "args": ["--no-sandbox", "--disable-blink-features=AutomationControlled",

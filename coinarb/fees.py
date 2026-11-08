@@ -78,6 +78,9 @@ def compute(buy_price: float, expected_sale_price: float, terms: DealTerms,
     mv = market_value_hint if market_value_hint else expected_sale_price
     if terms.slab_tariff == "auto":
         tariff_name, slab = ngs_tariff(mv)
+    elif terms.slab_tariff == "none":
+        # перепродажа как есть (кросс-площадочный арбитраж, флип слаба) — без NGS
+        tariff_name, slab = "—", 0
     else:
         match = [t for t in NGS_TARIFFS if t[0].lower() == terms.slab_tariff.lower()]
         tariff_name, slab = (match[0][0], match[0][1]) if match else ngs_tariff(mv)

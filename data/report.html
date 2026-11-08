@@ -1,0 +1,349 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coinarb — аналитика арбитража монет</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f1115;color:#e6e8ee;
+font:15px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:28px;margin:0 0 6px;letter-spacing:-.4px}
+h2{font-size:19px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid #262b36}
+h3{font-size:15px;margin:22px 0 8px;color:#aab2c5}
+.sub{color:#8b93a7;font-size:13px;margin-bottom:26px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:18px 0}
+.kpi{background:#171a21;border:1px solid #262b36;border-radius:10px;padding:14px 16px}
+.kpi .v{font-size:24px;font-weight:600;letter-spacing:-.5px}
+.kpi .l{color:#8b93a7;font-size:12px;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0 6px}
+th{text-align:left;color:#8b93a7;font-weight:500;font-size:11.5px;text-transform:uppercase;
+letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid #262b36}
+td{padding:9px 10px;border-bottom:1px solid #1c212a;vertical-align:top}
+tr:hover td{background:#151922}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:#4ade80;font-weight:600}.neg{color:#f87171}
+.tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:600}
+.t-ok{background:#14351f;color:#4ade80}.t-warn{background:#3a2d10;color:#fbbf24}
+.t-bad{background:#3a1618;color:#f87171}.t-info{background:#152238;color:#60a5fa}
+.note{background:#161a22;border-left:3px solid #3b82f6;padding:12px 16px;border-radius:0 8px 8px 0;
+margin:14px 0;font-size:13.5px;color:#c3cad8}
+.warn{border-left-color:#f59e0b}
+.crit{border-left-color:#ef4444}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+.bar{height:6px;background:#262b36;border-radius:3px;overflow:hidden;margin-top:5px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#4ade80)}
+a{color:#60a5fa;text-decoration:none}a:hover{text-decoration:underline}
+.foot{margin-top:44px;color:#5f6678;font-size:12px;border-top:1px solid #262b36;padding-top:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<h1>Арбитраж монет: полная картина</h1>
+<div class="sub">staraya-moneta.ru · meshok.net · архивы аукционов → NGS → продажа ·
+отчёт собран 08.11.2026 00:12 <span class="tag t-warn">comps=DEMO</span></div>
+
+
+<div class="grid"><div class="kpi"><div class="v">463</div><div class="l">лотов в базе</div></div><div class="kpi"><div class="v">69</div><div class="l">монет опознано</div></div><div class="kpi"><div class="v">0</div><div class="l">сделок</div></div><div class="kpi"><div class="v">28</div><div class="l">записей comps</div></div><div class="kpi"><div class="v">58</div><div class="l">типов в индексе</div></div><div class="kpi"><div class="v">0</div><div class="l">возможностей</div></div></div>
+
+<div class="note crit"><b>Главное, что показали данные.</b> На staraya-moneta почти всё уже
+в слабах NGC/ННР и стоит по верхней планке рынка — вход через этот магазин невыгоден.
+Деньги в схеме лежат там, где есть <b>сырые</b> монеты (Мешок, региональные продавцы) и
+<b>факты продаж</b> (архивы аукционов). Поэтому ядро системы — база сделок: она наполняет
+индекс, калибрует скидку NGS и включает стратегии cross_source / slab_flip.</div>
+
+<h2>Возможности по стратегиям</h2>
+<h3>Сырая монета → слаб NGS → продажа <span class="tag t-info">0</span></h3><div class="sub" style="margin:2px 0 6px">Покупка сырой монеты → слабирование в NGS → продажа в слабе. Проходят только лоты с чистой прибылью и ROI выше порога.</div><div class="note" style="margin:8px 0">Пусто. Порог прибыли/ROI не пройден ни одним лотом.</div><h3>Кросс-площадочный (купить дешевле на одной, продать на другой) <span class="tag t-info">0</span></h3><div class="sub" style="margin:2px 0 6px">Один и тот же тип монеты на двух площадках с разрывом цен ≥12%. Стратегия заработает, когда в базе появятся оба источника (SM + Мешок).</div><div class="note" style="margin:8px 0">Пусто. Нужны лоты одного типа минимум с двух площадок: подключите Мешок (<span class="mono">harvest-meshok --storage-state cookies.json</span>).</div><h3>Флип слаба (признанный слаб ниже рынка) <span class="tag t-info">0</span></h3><div class="sub" style="margin:2px 0 6px">Монета в признанном слабе (NGC/PCGS/ННР) выставлена ниже медианы сопоставимых сделок — перепродажа без слабирования.</div><div class="note" style="margin:8px 0">Пусто. Порог прибыли/ROI не пройден ни одним лотом.</div><h3>Радар заниженных цен (информационный сигнал) <span class="tag t-info">0</span></h3><div class="sub" style="margin:2px 0 6px">Радар заниженных цен: ask ниже медианы рынка типа на ≥20% (по ≥3 comps). Не сделка «под ключ», а сигнал смотреть глазами.</div><div class="note" style="margin:8px 0">Пусто. Порог прибыли/ROI не пройден ни одним лотом.</div>
+
+
+<h2>Юнит-экономика: Рубль 1913 г. (ВС) 300 лет дома Романовых, выпуклый чекан, в слабе ННР.</h2>
+<div class="two">
+<div><h3>Сделка, ₽</h3><table><tr><td>Вход: монета уже в слабе (переслабирование)</td><td class="num neg">−80 000 ₽</td></tr><tr><td>Слабирование NGS (Стандарт)</td><td class="num neg">−1 200 ₽</td></tr><tr><td>Логистика (до NGS и до покупателя)</td><td class="num neg">−800 ₽</td></tr><tr><td>Продажа в слабе NGS</td><td class="num pos">+40 600 ₽</td></tr><tr><td>Комиссия Мешка</td><td class="num neg">−1 218 ₽</td></tr><tr><td>Резерв на риски (15%)</td><td class="num neg">−6 210 ₽</td></tr><tr style="border-top:2px solid #3b82f6"><td><b>Чистая прибыль с одной монеты</b></td><td class="num neg"><b>−36 408 ₽</b></td></tr><tr><td>ROI на вложенные деньги</td><td class="num neg">-44.4%</td></tr><tr><td>Цена продажи, при которой выходим в ноль</td><td class="num">77 008 ₽</td></tr></table></div>
+<div><h3>Аналоги (comps), ₽</h3>
+<table><tr><th>Цена</th><th>Грейдер</th><th>Грейд</th><th>Источник</th></tr><tr><td class="num">62 000 ₽</td><td>NGC</td><td class="num">62</td><td>db</td></tr><tr><td class="num">44 000 ₽</td><td>ННР</td><td class="num">62</td><td>db</td></tr><tr><td class="num">74 000 ₽</td><td>NGC</td><td class="num">63</td><td>db</td></tr><tr><td class="num">54 000 ₽</td><td>NGC</td><td class="num">61</td><td>db</td></tr><tr><td class="num">13 500 ₽</td><td>без слаба</td><td class="num">raw</td><td>db</td></tr><tr><td class="num">9 500 ₽</td><td>без слаба</td><td class="num">raw</td><td>db</td></tr></table>
+<div class="note">4 comps (0 сделок, 6 из базы), tier 1, скидка NGS 0.70</div></div>
+</div>
+
+<h2>Ценовой индекс по типам</h2>
+<div class="sub">«Премия слаба» — во сколько раз медиана slab-листингов выше медианы сырых
+того же типа. Это измеренный рынком приз схемы «сырая → слаб» (до вычета затрат на NGS).
+«Сделки» — медиана фактических продаж из базы deals.</div>
+<table><tr><th>Тип (год|номинал|металл)</th><th class="num">Лист.</th><th class="num">Сыр/слаб</th><th class="num">Сыр. медиана</th><th class="num">Слаб. медиана</th><th class="num">Премия слаба</th><th class="num">Сделки</th><th class="num">Спред ask</th><th>Грейдеры</th></tr><tr><td class="mono">1911|10 руб|Au<div style="color:#6b7280">10 рублей 1911 (ЭБ), золото, в слабе ННР MS63</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">197 500 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">2.5%</td><td class="mono">NRG 62 200 000, ННР 63 195 000</td></tr><tr><td class="mono">1928|20 коп|Ag<div style="color:#6b7280">20 копеек 1928, Федорин VI № 14, в слабе NGC MS65-025</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">9 500 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">0.0%</td><td class="mono">NGC 65 9 500</td></tr><tr><td class="mono">1980|1 руб|Ni<div style="color:#6b7280">1 рубль 1980, Здание Моссовета, Олимпиада-80, пруф, в сл</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">11 850 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">0.8%</td><td class="mono">—</td></tr><tr><td class="mono">1979|150 руб|Pt<div style="color:#6b7280">150 рублей 1979, платина, Колесницы, серия Олимпиада-80,</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">179 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">0.0%</td><td class="mono">NGC 70 179 000</td></tr><tr><td class="mono">1988|5 руб|Ni<div style="color:#6b7280">5 рублей 1988, Памятник «Тысячелетие России», пруф, в сл</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">6 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">50.0%</td><td class="mono">—</td></tr><tr><td class="mono">1990|150 руб|Pt<div style="color:#6b7280">150 рублей 1990, Бот Св.Гавриил, платина 15,55 г, в слаб</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">237 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">27.0%</td><td class="mono">NGC 70 237 000</td></tr><tr><td class="mono">2022|10 руб|Ni<div style="color:#6b7280">10 рублей 2022 ММД, Рыльск, «Древние города России», в с</div></td><td class="num">2</td><td class="num">0/2</td><td class="num">—</td><td class="num">2 500 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">0.0%</td><td class="mono">ННР 68 2 500</td></tr><tr><td class="mono">1714|копейка|Cu<div style="color:#6b7280">Копейка 1714 г. НД,UNC медь</div></td><td class="num">1</td><td class="num">1/0</td><td class="num">17 000 ₽</td><td class="num">—</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">—</td></tr><tr><td class="mono">1777|полтина|Au<div style="color:#6b7280">Полтина 1777, дворцовая, золото, Екатерина II, в слабе N</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">310 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NGC 58 310 000</td></tr><tr><td class="mono">1840|полтина|Ag<div style="color:#6b7280">Полтина 1840 СПБ НГ, серебро, в слабе ННР MS60</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">64 400 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">ННР 60 64 400</td></tr><tr><td class="mono">1842|рубль|Ag<div style="color:#6b7280">Рубль 1842 СПБ АЧ, в слабе NGC MS63.</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">275 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NGC 63 275 000</td></tr><tr><td class="mono">1842|5 руб|Au<div style="color:#6b7280">5 рублей 1842 СПБ АЧ, золото, в слабе ННР MS 61</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">250 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">ННР 61 250 000</td></tr><tr><td class="mono">1859|5 руб|Au<div style="color:#6b7280">5 рублей 1859 г. СПБ ФБ, золото</div></td><td class="num">1</td><td class="num">1/0</td><td class="num">390 000 ₽</td><td class="num">—</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">—</td></tr><tr><td class="mono">1883|рубль|Ag<div style="color:#6b7280">Рубль 1883 ЛШ, коронационный Александра III, в слабе ННР</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">210 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">ННР 62 210 000</td></tr><tr><td class="mono">1889|5 руб|Au<div style="color:#6b7280">5 рублей 1889 г. (АГ), золото, в слабе NGC MS 62</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">290 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NGC 62 290 000</td></tr><tr><td class="mono">1890|5 руб|Au<div style="color:#6b7280">5 рублей 1890 г. (АГ), золото, в слабе NGC MS 61</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">280 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NGC 61 280 000</td></tr><tr><td class="mono">1898|15 коп|Ag<div style="color:#6b7280">15 копеек 1898 СПБ АГ, в слабе NGC MS64.</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">110 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NGC 64 110 000</td></tr><tr><td class="mono">1898|5 руб|Au<div style="color:#6b7280">5 рублей 1898 г. АГ, золото, в слабе NRG MS 62</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">75 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NRG 62 75 000</td></tr><tr><td class="mono">1899|10 коп|Ag<div style="color:#6b7280">10 копеек 1899 г. СПБ АГ в слабе ННР MS 66</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">130 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">ННР 66 130 000</td></tr><tr><td class="mono">1899|10 руб|Au<div style="color:#6b7280">10 рублей 1899 г. (АГ), золото, царский чекан, в слабе N</div></td><td class="num">1</td><td class="num">0/1</td><td class="num">—</td><td class="num">145 000 ₽</td><td class="num">—</td><td class="num">—<div class="mono" style="color:#6b7280">0 сделок</div></td><td class="num">—</td><td class="mono">NRG 62 145 000</td></tr></table>
+
+<h2>Калибровка скидки NGS</h2>
+<div class="note crit"><b>Скидка NGS НЕ измерена.</b> В допущениях стоит гипотеза <span class="mono">ngs_discount=0.7</span>. Все суммы «слаб → продажа» — сценарий, а не прогноз. Нужны пары «та же монета, тот же грейд: NGS vs NGC/ННР» — они появятся, когда база сделок наполнится NGS-слабами (Мешок, архивы аукционов).</div><h3>Найденные пары грейдеров</h3><table><tr><th>Тип</th><th>Грейд</th><th>Младший (A)</th><th class="num">Цена A</th><th>Эталон (B)</th><th class="num">Цена B</th><th class="num">Скидка A/B</th></tr><tr><td class="mono">1911|10 руб|Au</td><td>63/62</td><td>NRG</td><td class="num">200 000 ₽</td><td>ННР</td><td class="num">195 000 ₽</td><td class="num">1.026</td></tr></table>
+
+<h2>База сделок</h2>
+<div class="sub">Факты продаж: завершённые лоты Мешка, архивы аукционов, исчезнувшие
+листинги (vanish-прокси), ручной импорт.</div>
+<div class="note warn">База сделок пуста. Способы наполнить: <span class="mono">harvest-meshok --sold</span> (завершённые лоты Мешка), <span class="mono">import-sold архив.csv|json|html</span> (архивы Конрос/Волмар/RareCoins), ежедневный <span class="mono">harvest-sm</span> (исчезнувшие лоты = прокси продаж).</div>
+
+<h2>Лист наблюдения: лоты с аналогами</h2>
+<div class="sub">Отсортировано по чистой прибыли. «Сырая» — не в признанном слабе, кандидат
+на слабирование. Отрицательная прибыль означает, что вход по текущей цене невыгоден —
+это тоже сигнал.</div>
+<table><tr><th>Лот</th><th class="num">Вход</th><th class="num">Ожид. продажа</th>
+<th class="num">Слаб</th><th class="num">Чистыми</th><th class="num">ROI</th><th>Уверенность</th></tr>
+<tr>
+<td>5 рублей 1988, Памятник «Тысячелетие России», пруф, в слабе PR69 DCAM.<div class="mono" style="color:#6b7280;margin-top:3px">
+1988 · 5 руб · Ni · PF69
+</div></td>
+<td class="num">4 500 ₽</td>
+<td class="num">7 500 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num pos">1 008 ₽</td>
+<td class="num pos">16.7%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:22%"></i></div></td>
+</tr><tr>
+<td>1 рубль 1980, Олимпийский факел, Олимпиада-80, пруф, в слабе PF68 ULTRA CAMEO.<div class="mono" style="color:#6b7280;margin-top:3px">
+1980 · 1 руб · Ni · PF68
+</div></td>
+<td class="num">11 800 ₽</td>
+<td class="num">11 900 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-1 972 ₽</td>
+<td class="num neg">-14.3%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:22%"></i></div></td>
+</tr><tr>
+<td>10 рублей 2022 ММД, Рыльск, «Древние города России», в слабе ННР MS68.<div class="mono" style="color:#6b7280;margin-top:3px">
+2022 · 10 руб · Ni · MS68
+ННР</div></td>
+<td class="num">2 500 ₽</td>
+<td class="num">1 750 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-2 008 ₽</td>
+<td class="num neg">-49.6%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:28%"></i></div></td>
+</tr><tr>
+<td>10 рублей 2022 ММД, Городец, «Древние города России», в слабе ННР MS68.<div class="mono" style="color:#6b7280;margin-top:3px">
+2022 · 10 руб · Ni · MS68
+ННР</div></td>
+<td class="num">2 500 ₽</td>
+<td class="num">1 750 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-2 008 ₽</td>
+<td class="num neg">-49.6%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:28%"></i></div></td>
+</tr><tr>
+<td>1 рубль 1980, Здание Моссовета, Олимпиада-80, пруф, в слабе PF68 ULTRA CAMEO.<div class="mono" style="color:#6b7280;margin-top:3px">
+1980 · 1 руб · Ni · PF68
+</div></td>
+<td class="num">11 900 ₽</td>
+<td class="num">11 800 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-2 139 ₽</td>
+<td class="num neg">-15.4%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:22%"></i></div></td>
+</tr><tr>
+<td>15 копеек 1915 г. ВС в слабе  ННР MS 66<div class="mono" style="color:#6b7280;margin-top:3px">
+1915 · 15 коп · Ag · MS66
+ННР</div></td>
+<td class="num">6 000 ₽</td>
+<td class="num">4 480 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-2 744 ₽</td>
+<td class="num neg">-36.3%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>5 рублей 1988, Памятник Петру I, пруф, в слабе PF68 ULTRA CAMEO.<div class="mono" style="color:#6b7280;margin-top:3px">
+1988 · 5 руб · Ni · PF68
+</div></td>
+<td class="num">7 500 ₽</td>
+<td class="num">4 500 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-4 002 ₽</td>
+<td class="num neg">-44.2%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:22%"></i></div></td>
+</tr><tr>
+<td>20 копеек 1928, Федорин VI № 14, в слабе NGC MS65-025<div class="mono" style="color:#6b7280;margin-top:3px">
+1928 · 20 коп · Ag · MS65
+NGC</div></td>
+<td class="num">9 500 ₽</td>
+<td class="num">6 020 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-4 456 ₽</td>
+<td class="num neg">-40.3%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:44%"></i></div></td>
+</tr><tr>
+<td>20 копеек 1928, Федорин VI № 14, в слабе NGC MS65-020<div class="mono" style="color:#6b7280;margin-top:3px">
+1928 · 20 коп · Ag · MS65
+NGC</div></td>
+<td class="num">9 500 ₽</td>
+<td class="num">6 020 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-4 456 ₽</td>
+<td class="num neg">-40.3%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:44%"></i></div></td>
+</tr><tr>
+<td>1 рубль 1969, Федорин VI № 20, в слабе NGC MS63.<div class="mono" style="color:#6b7280;margin-top:3px">
+1969 · 1 руб · Ni · MS63
+NGC</div></td>
+<td class="num">7 000 ₽</td>
+<td class="num">2 625 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-5 115 ₽</td>
+<td class="num neg">-59.8%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>150 рублей 1990, Полтавская битва, платина 15,55 г, в слабе NGC PF70 Ultra Cam<div class="mono" style="color:#6b7280;margin-top:3px">
+1990 · 150 руб · Pt · PF70
+NGC</div></td>
+<td class="num">205 000 ₽</td>
+<td class="num">188 300 ₽</td>
+<td class="num">2 500 ₽<div class="mono" style="color:#6b7280">Оптимум</div></td>
+<td class="num neg">-22 649 ₽</td>
+<td class="num neg">-10.9%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:28%"></i></div></td>
+</tr><tr>
+<td>150 рублей 1978, платина, Дискобол, серия Олимпиада-80, пруф, в слабе NGC PF70<div class="mono" style="color:#6b7280;margin-top:3px">
+1978 · 150 руб · Pt · PF70
+NGC</div></td>
+<td class="num">179 000 ₽</td>
+<td class="num">159 250 ₽</td>
+<td class="num">2 500 ₽<div class="mono" style="color:#6b7280">Оптимум</div></td>
+<td class="num neg">-24 370 ₽</td>
+<td class="num neg">-13.4%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>Рубль 1913 г. (ВС) 300 лет дома Романовых, выпуклый чекан, в слабе ННР MS 62<div class="mono" style="color:#6b7280;margin-top:3px">
+1913 · рубль · Ag · MS62
+ННР</div></td>
+<td class="num">80 000 ₽</td>
+<td class="num">40 600 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-36 408 ₽</td>
+<td class="num neg">-44.4%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:72%"></i></div></td>
+</tr><tr>
+<td>5 рублей 1898 г. АГ, золото, в слабе NRG MS 62<div class="mono" style="color:#6b7280;margin-top:3px">
+1898 · 5 руб · Au · MS62
+NRG</div></td>
+<td class="num">75 000 ₽</td>
+<td class="num">31 500 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-39 620 ₽</td>
+<td class="num neg">-51.5%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>150 рублей 1979, платина, Колесницы, серия Олимпиада-80, пруф, в слабе NGC PF7<div class="mono" style="color:#6b7280;margin-top:3px">
+1979 · 150 руб · Pt · PF70
+NGC</div></td>
+<td class="num">179 000 ₽</td>
+<td class="num">125 300 ₽</td>
+<td class="num">2 500 ₽<div class="mono" style="color:#6b7280">Оптимум</div></td>
+<td class="num neg">-52 209 ₽</td>
+<td class="num neg">-28.6%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:28%"></i></div></td>
+</tr><tr>
+<td>150 рублей 1979, платина, Борьба, серия Олимпиада-80, пруф, в слабе NGC PF70 U<div class="mono" style="color:#6b7280;margin-top:3px">
+1979 · 150 руб · Pt · PF70
+NGC</div></td>
+<td class="num">179 000 ₽</td>
+<td class="num">125 300 ₽</td>
+<td class="num">2 500 ₽<div class="mono" style="color:#6b7280">Оптимум</div></td>
+<td class="num neg">-52 209 ₽</td>
+<td class="num neg">-28.6%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:28%"></i></div></td>
+</tr><tr>
+<td>10 рублей 1899 г. (АГ), золото, царский чекан, в слабе NRG MS 62<div class="mono" style="color:#6b7280;margin-top:3px">
+1899 · 10 руб · Au · MS62
+NRG</div></td>
+<td class="num">145 000 ₽</td>
+<td class="num">47 600 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-85 918 ₽</td>
+<td class="num neg">-58.4%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>15 копеек 1898 СПБ АГ, в слабе NGC MS64.<div class="mono" style="color:#6b7280;margin-top:3px">
+1898 · 15 коп · Ag · MS64
+NGC</div></td>
+<td class="num">110 000 ₽</td>
+<td class="num">5 250 ₽</td>
+<td class="num">750 ₽<div class="mono" style="color:#6b7280">Базовый</div></td>
+<td class="num neg">-90 512 ₽</td>
+<td class="num neg">-81.1%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>Полтина 1777, дворцовая, золото, Екатерина II, в слабе NGC AU58.<div class="mono" style="color:#6b7280;margin-top:3px">
+1777 · полтина · Au · AU58
+NGC</div></td>
+<td class="num">310 000 ₽</td>
+<td class="num">203 000 ₽</td>
+<td class="num">3 500 ₽<div class="mono" style="color:#6b7280">ТОП</div></td>
+<td class="num neg">-100 695 ₽</td>
+<td class="num neg">-32.0%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:34%"></i></div></td>
+</tr><tr>
+<td>150 рублей 1990, Бот Св.Гавриил, платина 15,55 г, в слабе NGC PF70 Ultra Cameo<div class="mono" style="color:#6b7280;margin-top:3px">
+1990 · 150 руб · Pt · PF70
+NGC</div></td>
+<td class="num">269 000 ₽</td>
+<td class="num">143 500 ₽</td>
+<td class="num">2 500 ₽<div class="mono" style="color:#6b7280">Оптимум</div></td>
+<td class="num neg">-113 785 ₽</td>
+<td class="num neg">-41.8%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:28%"></i></div></td>
+</tr><tr>
+<td>Рубль 1842 СПБ АЧ, в слабе NGC MS63.<div class="mono" style="color:#6b7280;margin-top:3px">
+1842 · рубль · Ag · MS63
+NGC</div></td>
+<td class="num">275 000 ₽</td>
+<td class="num">136 500 ₽</td>
+<td class="num">2 500 ₽<div class="mono" style="color:#6b7280">Оптимум</div></td>
+<td class="num neg">-124 625 ₽</td>
+<td class="num neg">-44.8%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:46%"></i></div></td>
+</tr><tr>
+<td>10 рублей 1911 (ЭБ), золото, в слабе ННР MS63<div class="mono" style="color:#6b7280;margin-top:3px">
+1911 · 10 руб · Au · MS63
+ННР</div></td>
+<td class="num">195 000 ₽</td>
+<td class="num">45 500 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-130 140 ₽</td>
+<td class="num neg">-66.1%</td>
+<td><span class="tag t-info">уже в слабе</span><div class="bar"><i style="width:44%"></i></div></td>
+</tr><tr>
+<td>10 рублей 1911 г. (ЭБ), золото, зеркальный штемпельный блеск, в слабе NRG MS 6<div class="mono" style="color:#6b7280;margin-top:3px">
+1911 · 10 руб · Au · MS62
+NRG</div></td>
+<td class="num">200 000 ₽</td>
+<td class="num">45 500 ₽</td>
+<td class="num">1 200 ₽<div class="mono" style="color:#6b7280">Стандарт</div></td>
+<td class="num neg">-134 390 ₽</td>
+<td class="num neg">-66.5%</td>
+<td><span class="tag t-ok">слаб 3-го уровня</span><div class="bar"><i style="width:44%"></i></div></td>
+</tr></table>
+
+<h2>Покрытие данных</h2>
+<div class="sub">Насколько полно удаётся восстановить признаки лота из заголовка продавца.
+Это и есть предел аналитики: без номинала и года монету не с чем сравнивать.</div>
+<table><tr><th>Поле</th><th class="num">Заполнено</th><th class="num">Доля</th><th style="width:130px">Покрытие</th></tr><tr><td>Год</td><td class="num">69 / 69</td><td class="num">100%</td><td><div class="bar"><i style="width:100%"></i></div></td></tr><tr><td>Номинал</td><td class="num">69 / 69</td><td class="num">100%</td><td><div class="bar"><i style="width:100%"></i></div></td></tr><tr><td>Металл</td><td class="num">68 / 69</td><td class="num">99%</td><td><div class="bar"><i style="width:99%"></i></div></td></tr><tr><td>Грейд (число)</td><td class="num">61 / 69</td><td class="num">88%</td><td><div class="bar"><i style="width:88%"></i></div></td></tr><tr><td>В слабе</td><td class="num">61 / 69</td><td class="num">88%</td><td><div class="bar"><i style="width:88%"></i></div></td></tr></table>
+
+<div class="two">
+<div><h2>Тарифы NGS (грейдинг + слабирование)</h2>
+<table><tr><th>Тариф</th><th class="num">Цена</th><th class="num">Стоимость монеты</th>
+<th class="num">Срок</th></tr><tr><td>Прегрейд</td><td class="num">500 ₽</td><td class="num">без ограничений</td><td class="num">0 дн.</td></tr><tr><td>Базовый</td><td class="num">750 ₽</td><td class="num">до 10 000 ₽</td><td class="num">7 дн.</td></tr><tr><td>Стандарт</td><td class="num">1 200 ₽</td><td class="num">до 50 000 ₽</td><td class="num">7 дн.</td></tr><tr><td>Классик</td><td class="num">1 500 ₽</td><td class="num">до 100 000 ₽</td><td class="num">7 дн.</td></tr><tr><td>Оптимум</td><td class="num">2 500 ₽</td><td class="num">до 200 000 ₽</td><td class="num">5 дн.</td></tr><tr><td>ТОП</td><td class="num">3 500 ₽</td><td class="num">до 500 000 ₽</td><td class="num">3 дн.</td></tr><tr><td>Элит</td><td class="num">4 500 ₽</td><td class="num">без ограничений</td><td class="num">2 дн.</td></tr></table>
+<div class="note warn">Тариф «Стандарт» за 1 200 ₽ действует только для монет рыночной
+стоимостью <b>до 50 000 ₽</b>. При более дорогой монете — «Классик» 1 500 ₽ и выше.</div></div>
+<div><h2>Допущения сделки</h2>
+<table><tr><th>Параметр</th><th class="num">Значение</th></tr><tr><td class="mono">slab_tariff</td><td class="num">auto</td></tr><tr><td class="mono">ship_in_rub</td><td class="num">400.0</td></tr><tr><td class="mono">ship_out_rub</td><td class="num">400.0</td></tr><tr><td class="mono">marketplace</td><td class="num">meshok</td></tr><tr><td class="mono">selling_fee_rate</td><td class="num">None</td></tr><tr><td class="mono">ngs_discount</td><td class="num">0.7</td></tr><tr><td class="mono">grade_uplift</td><td class="num">0.0</td></tr><tr><td class="mono">tax_rate</td><td class="num">0.0</td></tr><tr><td class="mono">risk_haircut</td><td class="num">0.15</td></tr><tr><td class="mono">cushion_rub</td><td class="num">0.0</td></tr></table>
+<div class="note">Все допущения меняются без правки кода:
+<span class="mono">python scan.py analyze --terms '{"ngs_discount":0.6}'</span></div></div>
+</div>
+
+<h2>Метод и что делать дальше</h2>
+<div class="note"><b>1. Наполняйте базу сделок.</b> Каждый ежедневный прогон
+<span class="mono">harvest-sm</span> помечает исчезнувшие лоты как продажи (vanish-прокси).
+Завершённые лоты Мешка: <span class="mono">harvest-meshok --sold</span>. Архивы аукционов
+(Конрос, Волмар, Редкие Монеты): сохраните страницу архива и загрузите
+<span class="mono">import-sold файл.html --source conros</span>. Через месяц у вас будет
+собственная история цен, которой нет у тех, кто смотрит руками.</div>
+<div class="note warn"><b>2. Meshok закрыт Cloudflare.</b> Из дата-центра Turnstile не
+проходится. Нужны cookies вашего браузера (<span class="mono">--storage-state cookies.json</span>)
+или резидентный прокси (<span class="mono">--proxy</span>). Парсер от способа доступа не зависит.</div>
+<div class="note crit"><b>3. Ключевой параметр — скидка NGS</b>
+(<span class="mono">ngs_discount=0.7</span>). Пока она не
+откалибрована по реальным парам цен, суммы в отчёте — сценарий, а не прогноз. Следите за
+секцией «Калибровка скидки NGS» выше.</div>
+
+<div class="foot">Сгенерировано автоматически · coinarb · данные: staraya-moneta.ru, meshok.net,
+ngs.vc, архивы аукционов<br>Демо-значения comps помечены source=DEMO и не являются рыночными данными.</div>
+</div></body></html>
