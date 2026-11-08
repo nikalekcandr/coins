@@ -9,6 +9,15 @@
 
 ## Быстрый старт
 
+### Windows — самый простой путь (двойным кликом)
+
+1. `SETUP.bat` — один раз: проверит Python, установит библиотеки и браузер,
+   прогонит самопроверку (`scan.py demo`).
+2. `RUN.bat` — каждый сбор: полный цикл; если лежит `cookies.json`, соберёт
+   и Мешок, а в конце сам откроет отчёт в браузере.
+
+### Вручную (любая ОС)
+
 **Установка (один раз):**
 
 ```bash
@@ -16,6 +25,20 @@ pip install -r requirements.txt                  # playwright, beautifulsoup4, l
 python -m playwright install chromium            # браузер для сбора
 python scan.py demo                              # самопроверка: всё работает?
 ```
+
+### Если ничего не работает
+
+| Симптом | Причина | Лечение |
+|---|---|---|
+| `No module named 'coinarb'` | Скачан СТАРЫЙ архив main (до 08.11.2026) | Скачайте архив заново: Code → Download ZIP |
+| `No module named 'bs4'` / `'lxml'` | Библиотеки не установлены | `pip install -r requirements.txt` (Windows: `SETUP.bat`) |
+| `'python' / 'pip' не является внутренней или внешней командой`, открывается Microsoft Store | Python не установлен или не в PATH | Установите с python.org, галочка **«Add python.exe to PATH»**, перезапустите консоль; или используйте `py -3` вместо `python` |
+| `can't open file 'scan.py'` | Запускаете не из папки проекта | `cd` в распакованную папку (`coins-main`), где лежит `scan.py` |
+| Окно мелькнуло и закрылось | Двойной клик по `scan.py` | Запускайте из консоли или через `SETUP.bat`/`RUN.bat` |
+| Chromium не скачивается | Блокировка CDN playwright | Повторить позже; или `set PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.npmmirror.com/binaries/playwright` и снова `python -m playwright install chromium` |
+| `meshok: 0 лотов (Cloudflare)` | Нет cookies | Сделайте `cookies.json` (см. выше) — без него Мешок не работает ни у кого |
+| Кракозябры вместо русского текста | Кодировка консоли | В cmd: `chcp 65001` (в .bat уже встроено) |
+| `UnicodeEncodeError` при выводе в файл | Windows-кодировка при перенаправлении | `set PYTHONIOENCODING=utf-8` перед запуском |
 
 **ПОЛНЫЙ СБОРОТ ОДНОЙ КОМАНДОЙ** (магазин SM → аукционы SM → Мешок активные
 и завершённые лоты → аналитика → индекс → калибровка NGS → отчёт):
